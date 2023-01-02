@@ -13,27 +13,39 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class BuildIndex {
-    public static void main(String[] args) throws IOException{
+@Component
+@Profile("index")
+public class IndexBuilder implements ApplicationRunner {
+    private static Logger logger = LoggerFactory.getLogger(IndexBuilder.class);
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
         Path datasetFile = Path.of("drug-ndc-0001-of-0001.json");
         Path dataDirectory = Path.of("data");
-        System.out.println("Building Lucene index using dataset: " + datasetFile.toAbsolutePath());
+        logger.info("Building Lucene index using dataset: {}", datasetFile.toAbsolutePath());
         NDCDataset dataset = readDataset(datasetFile);
         writeIndex(dataset, dataDirectory);
-        System.out.println("Build complete");
+        logger.info("Build complete");
     }
 
-    private static NDCDataset readDataset(Path datasetFile) throws IOException {
+    private NDCDataset readDataset(Path datasetFile) throws IOException {
         ObjectMapper mapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return mapper.readValue(datasetFile.toFile(), NDCDataset.class);
     }
 
-    private static void writeIndex(NDCDataset dataset, Path dataDirectory) throws IOException {
+    private void writeIndex(NDCDataset dataset, Path dataDirectory) throws IOException {
         Files.deleteIfExists(dataDirectory);
         Files.createDirectory(dataDirectory);
 
@@ -41,12 +53,12 @@ public class BuildIndex {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         Directory directory = FSDirectory.open(dataDirectory);
         try (IndexWriter iwriter = new IndexWriter(directory, config)) {
-            Iterable<Document> docs = () -> dataset.getResults().stream().map(BuildIndex::productToDocument).iterator();
+            Iterable<Document> docs = () -> dataset.getResults().stream().map(this::productToDocument).iterator();
             iwriter.addDocuments(docs);
         }
     }
 
-    private static Document productToDocument(Product product) {
+    private Document productToDocument(Product product) {
         try {
             Document doc = new Document();
             doc.add(new Field("productNDC", product.productNDC, TextField.TYPE_STORED));
