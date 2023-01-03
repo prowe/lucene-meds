@@ -36,5 +36,7 @@ Since it is a Java library, we're going to use Java to build our container.
 1. Add a dependency on [Lucene Core](https://mvnrepository.com/artifact/org.apache.lucene/lucene-core/9.4.2)
 1. Create a script to pull down and extract the database file.
     Then that script can invoke a custom entrypoint in our spring app that will build the index file.
+1. We can leverage Springs "profile" concept to switch between indexing and serving.
+
 
 

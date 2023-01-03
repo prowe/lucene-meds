@@ -18,16 +18,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sourceallies.lucinemeds.NDCProduct;
 
 @Component
 @Profile("index")
 public class IndexBuilder implements ApplicationRunner {
     private static Logger logger = LoggerFactory.getLogger(IndexBuilder.class);
+
+    private final ObjectMapper objectMapper;
+
+    public IndexBuilder(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -40,9 +46,7 @@ public class IndexBuilder implements ApplicationRunner {
     }
 
     private NDCDataset readDataset(Path datasetFile) throws IOException {
-        ObjectMapper mapper = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return mapper.readValue(datasetFile.toFile(), NDCDataset.class);
+        return objectMapper.readValue(datasetFile.toFile(), NDCDataset.class);
     }
 
     private void writeIndex(NDCDataset dataset, Path dataDirectory) throws IOException {
@@ -58,19 +62,20 @@ public class IndexBuilder implements ApplicationRunner {
         }
     }
 
-    private Document productToDocument(Product product) {
+    private Document productToDocument(NDCProduct product) {
         try {
             Document doc = new Document();
-            doc.add(new Field("productNDC", product.productNDC, TextField.TYPE_STORED));
-            if (product.genericName != null) {
-                doc.add(new Field("genericName", product.genericName, TextField.TYPE_STORED));
+            doc.add(new Field("productNDC", product.getProductNDC(), TextField.TYPE_NOT_STORED));
+            if (product.getGenericName() != null) {
+                doc.add(new Field("genericName", product.getGenericName(), TextField.TYPE_NOT_STORED));
             }
-            doc.add(new Field("labelerName", product.labelerName, TextField.TYPE_STORED));
-            if (product.brandName != null) {
-                doc.add(new Field("brandName", product.brandName, TextField.TYPE_STORED));
+            doc.add(new Field("labelerName", product.getLabelerName(), TextField.TYPE_NOT_STORED));
+            if (product.getBrandName() != null) {
+                doc.add(new Field("brandName", product.getBrandName(), TextField.TYPE_NOT_STORED));
             }
+            doc.add(new Field("_source", objectMapper.writeValueAsString(product), TextField.TYPE_STORED));
             return doc;
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | JsonProcessingException e) {
             throw new RuntimeException("Error building document for product: " + product, e);
         }
     }

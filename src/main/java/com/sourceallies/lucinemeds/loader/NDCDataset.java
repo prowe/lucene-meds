@@ -2,13 +2,15 @@ package com.sourceallies.lucinemeds.loader;
 
 import java.util.List;
 
-public class NDCDataset {
-    private List<Product> results;
+import com.sourceallies.lucinemeds.NDCProduct;
 
-    public List<Product> getResults() {
+public class NDCDataset {
+    private List<NDCProduct> results;
+
+    public List<NDCProduct> getResults() {
         return results;
     }
-    public void setResults(List<Product> results) {
+    public void setResults(List<NDCProduct> results) {
         this.results = results;
     }
 }

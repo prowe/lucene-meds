@@ -1,8 +1,8 @@
-package com.sourceallies.lucinemeds.loader;
+package com.sourceallies.lucinemeds;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Product {
+public class NDCProduct {
     @JsonProperty("product_ndc")
     String productNDC;
     @JsonProperty("generic_name")
@@ -19,5 +19,18 @@ public class Product {
         " genericName " + genericName +
         " labelerName " + labelerName +
         " brandName " + brandName;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+    public String getGenericName() {
+        return genericName;
+    }
+    public String getLabelerName() {
+        return labelerName;
+    }
+    public String getProductNDC() {
+        return productNDC;
     }
 }
