@@ -33,4 +33,8 @@ public class NDCProduct {
     public String getProductNDC() {
         return productNDC;
     }
+
+    public String getCode() {
+        return productNDC;
+    }
 }

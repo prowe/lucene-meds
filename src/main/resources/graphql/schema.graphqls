@@ -1,0 +1,10 @@
+type NDCProduct {
+    code: String!
+    genericName: String
+    labelerName: String
+    brandName: String
+}
+
+type Query {
+    searchMedicationCodes(query: String!): [NDCProduct]
+}

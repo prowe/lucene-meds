@@ -30,18 +30,21 @@ public class IndexBuilder implements ApplicationRunner {
     private static Logger logger = LoggerFactory.getLogger(IndexBuilder.class);
 
     private final ObjectMapper objectMapper;
+    private final Directory dataDirectory;
+    private final Analyzer analyzer;
 
-    public IndexBuilder(ObjectMapper objectMapper) {
+    public IndexBuilder(ObjectMapper objectMapper, Directory dataDirectory, Analyzer analyzer) {
         this.objectMapper = objectMapper;
+        this.dataDirectory = dataDirectory;
+        this.analyzer = analyzer;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         Path datasetFile = Path.of("drug-ndc-0001-of-0001.json");
-        Path dataDirectory = Path.of("data");
         logger.info("Building Lucene index using dataset: {}", datasetFile.toAbsolutePath());
         NDCDataset dataset = readDataset(datasetFile);
-        writeIndex(dataset, dataDirectory);
+        writeIndex(dataset);
         logger.info("Build complete");
     }
 
@@ -49,14 +52,9 @@ public class IndexBuilder implements ApplicationRunner {
         return objectMapper.readValue(datasetFile.toFile(), NDCDataset.class);
     }
 
-    private void writeIndex(NDCDataset dataset, Path dataDirectory) throws IOException {
-        Files.deleteIfExists(dataDirectory);
-        Files.createDirectory(dataDirectory);
-
-        Analyzer analyzer = new StandardAnalyzer();
+    private void writeIndex(NDCDataset dataset) throws IOException {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        Directory directory = FSDirectory.open(dataDirectory);
-        try (IndexWriter iwriter = new IndexWriter(directory, config)) {
+        try (IndexWriter iwriter = new IndexWriter(dataDirectory, config)) {
             Iterable<Document> docs = () -> dataset.getResults().stream().map(this::productToDocument).iterator();
             iwriter.addDocuments(docs);
         }

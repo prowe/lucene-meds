@@ -34,12 +34,18 @@ Since it is a Java library, we're going to use Java to build our container.
     Select "Spring for GraphQL" and "Spring Web" as the dependencies
 1. Extract the downloaded zip.
 1. Add a dependency on [Lucene Core](https://mvnrepository.com/artifact/org.apache.lucene/lucene-core/9.4.2)
+1. Also add a dependency on [Lucene Queryparser](https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser/9.4.2) to handle human entered queries.
 1. Create [`NDCProduct`] to represent each medication code, and a [`NDCDataset`] to hold the wrapper object in the JSON file.
+1. Both indexing and searching will need a `Directory` to work with, so we can define that as a Bean.
+1. We also need to create an `Analyzer` to handle word stemming and other analysis.
 1. Create a class that will read the JSON file, convert each `NDCProduct` into a Lucene `Document` and add it to an index.
     We also serialize the entire document under the `_source` field so we can easily deserialize it later.
     We mark this spring boot class with `@Profile("index")` so that it will only be run when spring is started with the "index" profile.
+1. When we are indexing, we don't want Tomcat to startup. 
+    We can create a `application-index.properties` file to supress that behavior.
 1. Create a script to pull down and extract the database file.
     Then that script will run maven with the "index" profile
-
-
-
+1. Create a [GraphQL schema file] to define our public API.
+1. Define an `IndexSearcher` bean that will act as our entry point into our index.
+1. Create a [`SearchMedicationCodesController`] that will be responsible for executing our search.
+1. After starting our application locally using `./mvnw spring-boot:run` we can execute a search for a medication by sending a request to the `/graphql` endpoint.
