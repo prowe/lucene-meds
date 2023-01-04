@@ -49,3 +49,11 @@ Since it is a Java library, we're going to use Java to build our container.
 1. Define an `IndexSearcher` bean that will act as our entry point into our index.
 1. Create a [`SearchMedicationCodesController`] that will be responsible for executing our search.
 1. After starting our application locally using `./mvnw spring-boot:run` we can execute a search for a medication by sending a request to the `/graphql` endpoint.
+1. Finally, we can wrap everything up in a [Dockerfile] that is capable of build our application.
+
+This project is a great example of how one "blessed stack" is not the best solution for all problems.
+Rather than blindly applying a single pattern to our microservice because it "works", we looked at the needs for our specific problem. 
+Specfically, we identified that the amount of data we were dealing with was fairly small.
+We also observed that the data rarely changes.
+Full text search is needed so medications can be searched for so we looked for a good full text search library (Lucene) and then choose our language based on that solution.
+The result is a small code base that is easy to manage, easy to scale, and will allow a team to move on to other, higher value, work.
