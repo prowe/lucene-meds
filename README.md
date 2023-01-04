@@ -24,12 +24,12 @@ This solution has a lot of advantages:
 
 There are a few downsides to consider:
 - An update requires a deployment, so this solution requires a CI/CD pipeline that can be executed faster than the need to update the data.
-- The dataset has to be reasonably small, a few MB is fine, a few GB will make the container much pretty big.
+- The dataset has to be reasonably small, a few MB is fine, a few GB will probably make the container to big.
 
 In order to support the full text search, I am going to leverage [Apache Lucene](https://lucene.apache.org).
 This is the open source project that backs ElasticSearch so it has a long track record for full text search.
+If you are new to full text search in general or Lucene based solutions specifically the [Lucene documentation](https://lucene.apache.org/core/9_4_2/index.html) has a good overview.
 Since it is a Java library, we're going to use Java to build our container.
-
 
 
 1. Initialize a new Spring Boot project using the [Spring Initialzr](https://start.spring.io).
@@ -38,8 +38,12 @@ Since it is a Java library, we're going to use Java to build our container.
 1. Add a dependency on [Lucene Core](https://mvnrepository.com/artifact/org.apache.lucene/lucene-core/9.4.2)
 1. Also, add a dependency on [Lucene Queryparser](https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser/9.4.2) to handle human entered queries.
 1. Create an [`NDCProduct`](./src/main/java/com/sourceallies/lucinemeds/NDCProduct.java) class to represent each medication code, and a [`NDCDataset`](./src/main/java/com/sourceallies/lucinemeds/loader/NDCDataset.java) to hold the wrapper object in the JSON file.
-1. Both indexing and searching will need a `Directory` to work with, so we can [define that as a Bean](./src/main/java/com/sourceallies/lucinemeds/LucineMedsApplication.java).
-1. We also need to create an `Analyzer` to handle word stemming and other analysis.
+1. Both indexing and searching will need a `Directory` to work with.
+    This tells Lucene where on disk our data is stored.
+    We can [define that as a Bean](./src/main/java/com/sourceallies/lucinemeds/LucineMedsApplication.java).
+1. We also need to create an `Analyzer`.
+    This class is responsible for taking text, breaking it down into peices and standardizing it so it can be searched.
+    Both the indexing process and the searching process need access to it.
 1. [Create a class](./src/main/java/com/sourceallies/lucinemeds/loader/IndexBuilder.java) that will read the JSON file, convert each `NDCProduct` into a Lucene `Document` and add it to an index.
     We also serialize the entire document under the `_source` field so we can easily deserialize it later.
     We mark this class with `@Profile("index")` so that it will only be run when spring is started with the "index" profile.
