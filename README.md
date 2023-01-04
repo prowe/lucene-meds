@@ -41,10 +41,10 @@ Since it is a Java library, we're going to use Java to build our container.
 1. Both indexing and searching will need a `Directory` to work with.
     This tells Lucene where on disk our data is stored.
     We can [define that as a Bean](./src/main/java/com/sourceallies/lucinemeds/LucineMedsApplication.java).
-1. We also need to create an `Analyzer`.
+1. We also need to create an [`Analyzer`](https://lucene.apache.org/core/9_4_2/core/org/apache/lucene/analysis/Analyzer.html).
     This class is responsible for taking text, breaking it down into peices and standardizing it so it can be searched.
     Both the indexing process and the searching process need access to it.
-1. [Create a class](./src/main/java/com/sourceallies/lucinemeds/loader/IndexBuilder.java) that will read the JSON file, convert each `NDCProduct` into a Lucene `Document` and add it to an index.
+1. [Create a class](./src/main/java/com/sourceallies/lucinemeds/loader/IndexBuilder.java) that will read the JSON file, convert each `NDCProduct` into a Lucene [`Document`](https://lucene.apache.org/core/9_4_2/core/org/apache/lucene/document/Document.html) and add it to an index.
     We also serialize the entire document under the `_source` field so we can easily deserialize it later.
     We mark this class with `@Profile("index")` so that it will only be run when spring is started with the "index" profile.
 1. When we are indexing, we don't want Tomcat to startup. 
